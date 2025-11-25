@@ -14,16 +14,16 @@ from typing import Optional
 # ----------------------------
 app = FastAPI()
 
-# Caminho absoluto para a pasta public
-public_path = os.path.join(os.path.dirname(__file__), "public")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+public_path = os.path.join(BASE_DIR, "public")
 
-# Servir arquivos estáticos
+print("PUBLIC PATH:", public_path)
+print("EXISTS:", os.path.exists(public_path))
+
+if not os.path.exists(public_path):
+    raise RuntimeError(f"Pasta public NÃO encontrada no caminho: {public_path}")
+
 app.mount("/public", StaticFiles(directory=public_path), name="public")
-
-# Rota para abrir o index.html diretamente no domínio principal
-@app.get("/")
-def homepage():
-    return FileResponse(os.path.join(public_path, "index.html"))
 
 # ----------------------------
 # Habilita CORS (igual ao cors() do Node)
@@ -128,6 +128,7 @@ def deletar_agendamento(id: int, db: Session = Depends(get_db)):
 @app.get("/")
 def home():
     return {"status": "Servidor FastAPI funcionando!"}
+
 
 
 
