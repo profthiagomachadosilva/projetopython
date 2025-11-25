@@ -13,7 +13,7 @@ DB_HOST = os.getenv("DB_HOST")
 
 
 DATABASE_URL = (
-    f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}:/{DB_NAME}"
+    f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}"
 )
 
 engine = create_engine(
@@ -24,3 +24,4 @@ engine = create_engine(
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
+
