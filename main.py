@@ -9,25 +9,28 @@ from app.models.agendamento import Agendamento
 from pydantic import BaseModel
 from typing import Optional
 
-# ----------------------------
-# Inicializa FastAPI
-# ----------------------------
 app = FastAPI()
 
-# ----------------------------
-# Caminho da pasta PUBLIC
-# ----------------------------
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-public_path = os.path.join(BASE_DIR, "public")
+# ---------------------------------------------------------
+# Caminho correto da pasta public dentro de /app/public
+# ---------------------------------------------------------
 
-if not os.path.exists(public_path):
-    print("ERRO: pasta public NÃO encontrada:", public_path)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # /opt/render/project/src/app
+public_path = os.path.join(BASE_DIR, "public")          # /opt/render/project/src/app/public
 
-app.mount("/public", StaticFiles(directory=public_path), name="public")
+print("PUBLIC PATH:", public_path)
+print("EXISTS:", os.path.exists(public_path))
 
-# ----------------------------
+# Só monta se existir
+if os.path.exists(public_path):
+    app.mount("/public", StaticFiles(directory=public_path), name="public")
+else:
+    print(f"⚠️ Aviso: pasta public NÃO encontrada em {public_path}")
+
+# ---------------------------------------------------------
 # CORS
-# ----------------------------
+# ---------------------------------------------------------
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -36,9 +39,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ----------------------------
-# Banco de dados
-# ----------------------------
+# ---------------------------------------------------------
+# Banco
+# ---------------------------------------------------------
 Base.metadata.create_all(bind=engine)
 
 def get_db():
@@ -48,17 +51,15 @@ def get_db():
     finally:
         db.close()
 
-
-# ----------------------------
+# ---------------------------------------------------------
 # Schemas
-# ----------------------------
+# ---------------------------------------------------------
 class AgendamentoCreate(BaseModel):
     nome: str
     telefone: str
     servico: str
     data: str
     horario: str
-
 
 class AgendamentoUpdate(BaseModel):
     nome: Optional[str] = None
@@ -67,27 +68,24 @@ class AgendamentoUpdate(BaseModel):
     data: Optional[str] = None
     horario: Optional[str] = None
 
-
-# ----------------------------
-# Rotas CRUD
-# ----------------------------
+# ---------------------------------------------------------
+# CRUD
+# ---------------------------------------------------------
 
 @app.get("/agendamentos")
-def listar(db: Session = Depends(get_db)):
+def listar_agendamentos(db: Session = Depends(get_db)):
     return db.query(Agendamento).all()
 
-
 @app.post("/agendamentos")
-def criar(data: AgendamentoCreate, db: Session = Depends(get_db)):
+def criar_agendamento(data: AgendamentoCreate, db: Session = Depends(get_db)):
     novo = Agendamento(**data.dict())
     db.add(novo)
     db.commit()
     db.refresh(novo)
     return {"mensagem": "Agendamento cadastrado com sucesso!"}
 
-
 @app.patch("/agendamentos/{id}")
-def atualizar(id: int, data: AgendamentoUpdate, db: Session = Depends(get_db)):
+def atualizar_agendamento(id: int, data: AgendamentoUpdate, db: Session = Depends(get_db)):
     agendamento = db.query(Agendamento).filter(Agendamento.id == id).first()
     if not agendamento:
         raise HTTPException(status_code=404, detail="Agendamento não encontrado")
@@ -98,9 +96,8 @@ def atualizar(id: int, data: AgendamentoUpdate, db: Session = Depends(get_db)):
     db.commit()
     return {"mensagem": "Agendamento atualizado com sucesso!"}
 
-
 @app.delete("/agendamentos/{id}")
-def deletar(id: int, db: Session = Depends(get_db)):
+def deletar_agendamento(id: int, db: Session = Depends(get_db)):
     agendamento = db.query(Agendamento).filter(Agendamento.id == id).first()
     if not agendamento:
         raise HTTPException(status_code=404, detail="Agendamento não encontrado")
@@ -109,13 +106,13 @@ def deletar(id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"mensagem": "Agendamento deletado com sucesso!"}
 
+# ---------------------------------------------------------
+# Rota raiz → devolve index.html
+# ---------------------------------------------------------
 
-# ----------------------------
-# Rota raiz — retorna index.html
-# ----------------------------
 @app.get("/")
-def serve_frontend():
-    index_file = os.path.join(public_path, "index.html")
-    if os.path.exists(index_file):
-        return FileResponse(index_file)
-    return {"erro": "index.html não encontrado dentro de /public"}
+def root():
+    index_path = os.path.join(public_path, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    return {"status": "Servidor FastAPI funcionando, mas index.html não encontrado."}
