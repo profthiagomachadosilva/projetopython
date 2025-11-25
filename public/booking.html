@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendamento • Barbearia Marvel</title>
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Barbearia Marvel</div>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="services.html">Serviços</a>
+            <a href="booking.html" class="active">Agendamento</a>
+            <a href="contact.html">Contato</a>
+            <a href="admin.html">Admin</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero-home">
+            <h1>Agende seu horário</h1>
+            <p>Preencha os dados abaixo e confirme sua reserva</p>
+        </section>
+
+        <form>
+            <label for="name">Nome completo</label>
+            <input id="name" type="text" required>
+
+            <label for="phone">Telefone</label>
+            <input id="phone" type="text" required>
+
+            <label for="service">Serviço</label>
+            <select id="service" required>
+                <option value="">Selecione</option>
+                <option>Corte clássico</option>
+                <option>Barba completa</option>
+                <option>Combo Herói</option>
+                <option>Camuflagem</option>
+            </select>
+
+            <label for="date">Data</label>
+            <input id="date" type="date" required>
+
+            <label for="time">Horário</label>
+            <input id="time" type="time" required>
+
+            <button type="submit">Confirmar agendamento</button>
+        </form>
+    </main>
+
+    <footer>
+        © 2025 Barbearia Marvel — Todos os direitos reservados.
+    </footer>
+    <script src="./js/booking.js" defer></script>
+</body>
+</html>

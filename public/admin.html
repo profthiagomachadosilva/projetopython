@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin • Barbearia Marvel</title>
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Barbearia Marvel</div>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="services.html">Serviços</a>
+            <a href="booking.html">Agendamento</a>
+            <a href="contact.html">Contato</a>
+            <a href="admin.html" class="active">Admin</a>
+        </nav>
+    </header>
+
+    <main>
+        <h1>Agendamentos Salvos</h1>
+        <table id="bookingsTable">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Telefone</th>
+                    <th>Serviço</th>
+                    <th>Data</th>
+                    <th>Horário</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Linhas geradas pelo JS -->
+            </tbody>
+        </table>
+    </main>
+
+    <footer>
+        © 2025 Barbearia Marvel — Todos os direitos reservados.
+    </footer>
+
+    <script src="./js/admin.js" defer></script>
+</body>
+</html>
