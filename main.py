@@ -14,36 +14,33 @@ from typing import Optional
 # ----------------------------
 app = FastAPI()
 
+# ----------------------------
+# Caminho da pasta PUBLIC
+# ----------------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 public_path = os.path.join(BASE_DIR, "public")
 
-print("PUBLIC PATH:", public_path)
-print("EXISTS:", os.path.exists(public_path))
-
 if not os.path.exists(public_path):
-    raise RuntimeError(f"Pasta public NÃO encontrada no caminho: {public_path}")
+    print("ERRO: pasta public NÃO encontrada:", public_path)
 
 app.mount("/public", StaticFiles(directory=public_path), name="public")
 
 # ----------------------------
-# Habilita CORS (igual ao cors() do Node)
+# CORS
 # ----------------------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # ----------------------------
-# Criar tabelas (equivalente ao Agendamento.sync())
+# Banco de dados
 # ----------------------------
 Base.metadata.create_all(bind=engine)
 
-# ----------------------------
-# Dependência para criar sessão de banco (igual ao req.db do Node)
-# ----------------------------
 def get_db():
     db = SessionLocal()
     try:
@@ -51,8 +48,9 @@ def get_db():
     finally:
         db.close()
 
+
 # ----------------------------
-# Schemas Pydantic (para entrada/saída)
+# Schemas
 # ----------------------------
 class AgendamentoCreate(BaseModel):
     nome: str
@@ -61,6 +59,7 @@ class AgendamentoCreate(BaseModel):
     data: str
     horario: str
 
+
 class AgendamentoUpdate(BaseModel):
     nome: Optional[str] = None
     telefone: Optional[str] = None
@@ -68,37 +67,28 @@ class AgendamentoUpdate(BaseModel):
     data: Optional[str] = None
     horario: Optional[str] = None
 
+
 # ----------------------------
-# ROTAS — CRUD COMPLETO (igual ao seu Express)
+# Rotas CRUD
 # ----------------------------
 
-# GET /agendamentos — lista todos
 @app.get("/agendamentos")
-def listar_agendamentos(db: Session = Depends(get_db)):
+def listar(db: Session = Depends(get_db)):
     return db.query(Agendamento).all()
 
 
-# POST /agendamentos — cria novo
 @app.post("/agendamentos")
-def criar_agendamento(data: AgendamentoCreate, db: Session = Depends(get_db)):
-    novo = Agendamento(
-        nome=data.nome,
-        telefone=data.telefone,
-        servico=data.servico,
-        data=data.data,
-        horario=data.horario
-    )
+def criar(data: AgendamentoCreate, db: Session = Depends(get_db)):
+    novo = Agendamento(**data.dict())
     db.add(novo)
     db.commit()
     db.refresh(novo)
     return {"mensagem": "Agendamento cadastrado com sucesso!"}
 
 
-# PATCH /agendamentos/:id — atualiza parcial
 @app.patch("/agendamentos/{id}")
-def atualizar_agendamento(id: int, data: AgendamentoUpdate, db: Session = Depends(get_db)):
+def atualizar(id: int, data: AgendamentoUpdate, db: Session = Depends(get_db)):
     agendamento = db.query(Agendamento).filter(Agendamento.id == id).first()
-
     if not agendamento:
         raise HTTPException(status_code=404, detail="Agendamento não encontrado")
 
@@ -109,11 +99,9 @@ def atualizar_agendamento(id: int, data: AgendamentoUpdate, db: Session = Depend
     return {"mensagem": "Agendamento atualizado com sucesso!"}
 
 
-# DELETE /agendamentos/:id — deleta
 @app.delete("/agendamentos/{id}")
-def deletar_agendamento(id: int, db: Session = Depends(get_db)):
+def deletar(id: int, db: Session = Depends(get_db)):
     agendamento = db.query(Agendamento).filter(Agendamento.id == id).first()
-
     if not agendamento:
         raise HTTPException(status_code=404, detail="Agendamento não encontrado")
 
@@ -123,12 +111,11 @@ def deletar_agendamento(id: int, db: Session = Depends(get_db)):
 
 
 # ----------------------------
-# Rota raiz
+# Rota raiz — retorna index.html
 # ----------------------------
 @app.get("/")
-def home():
-    return {"status": "Servidor FastAPI funcionando!"}
-
-
-
-
+def serve_frontend():
+    index_file = os.path.join(public_path, "index.html")
+    if os.path.exists(index_file):
+        return FileResponse(index_file)
+    return {"erro": "index.html não encontrado dentro de /public"}
