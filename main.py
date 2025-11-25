@@ -1,5 +1,8 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+import os
 from sqlalchemy.orm import Session
 from app.models.db import Base, engine, SessionLocal
 from app.models.agendamento import Agendamento
@@ -10,6 +13,17 @@ from typing import Optional
 # Inicializa FastAPI
 # ----------------------------
 app = FastAPI()
+
+# Caminho absoluto para a pasta public
+public_path = os.path.join(os.path.dirname(__file__), "public")
+
+# Servir arquivos estáticos
+app.mount("/public", StaticFiles(directory=public_path), name="public")
+
+# Rota para abrir o index.html diretamente no domínio principal
+@app.get("/")
+def homepage():
+    return FileResponse(os.path.join(public_path, "index.html"))
 
 # ----------------------------
 # Habilita CORS (igual ao cors() do Node)
@@ -114,5 +128,6 @@ def deletar_agendamento(id: int, db: Session = Depends(get_db)):
 @app.get("/")
 def home():
     return {"status": "Servidor FastAPI funcionando!"}
+
 
 
